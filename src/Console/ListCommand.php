@@ -2,113 +2,50 @@
 
 namespace Spatie\EventProjector\Console;
 
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Spatie\EventProjector\Projectionist;
-use Spatie\EventProjector\Projectors\Projector;
-use Spatie\EventProjector\Models\ProjectorStatus;
-use Spatie\EventProjector\Projectors\ProjectsEvents;
+use Spatie\EventProjector\EventHandlers\EventHandler;
 
-class ListCommand extends Command
+final class ListCommand extends Command
 {
-    use ProjectsEvents;
-
     protected $signature = 'event-projector:list';
 
-    protected $description = 'List all event projectors';
+    protected $description = 'Lists all event handlers';
 
-    /** @var \Spatie\EventProjector\Projectionist */
-    protected $projectionist;
-
-    public function __construct(Projectionist $projectionist)
+    public function handle(Projectionist $projectionist)
     {
-        parent::__construct();
+        $this->info('');
+        $projectors = $projectionist->getProjectors();
+        $rows = $this->convertEventHandlersToTableRows($projectors);
+        count($rows)
+            ? $this->table(['Event', 'Handled by projectors'], $rows)
+            : 'No projectors registered';
 
-        $this->projectionist = $projectionist;
+        $this->info('');
+        $projectors = $projectionist->getReactors();
+        $rows = $this->convertEventHandlersToTableRows($projectors);
+        count($rows)
+            ? $this->table(['Event', 'Handled by reactors'], $rows)
+            : 'No reactors registered';
     }
 
-    public function handle()
+    private function convertEventHandlersToTableRows(Collection $eventHandlers): array
     {
-        $projectors = $this->projectionist->getProjectors();
+        $events = $eventHandlers
+            ->reduce(function ($events, EventHandler $eventHandler) {
+                $eventHandler->getEventHandlingMethods()->each(function (string $method, string $eventClass) use (&$events, $eventHandler) {
+                    $events[$eventClass][] = get_class($eventHandler);
+                });
 
-        if ($projectors->isEmpty()) {
-            $this->warn('No projectors found. You can register projector like this : `Spatie\EventProjector\Facades\Projectionist::addProjector($projectorClassName)`.');
+                return $events;
+            }, []);
 
-            return;
-        }
-
-        $this->listProjectorsWithMissingEvents();
-
-        $this->list($projectors);
-    }
-
-    private function listProjectorsWithMissingEvents()
-    {
-        $header = ['Name', 'Last processed event id', 'Stream', 'Last event received at'];
-
-        $rows = $this->getProjectorStatusClass()::query()
-            ->where('has_received_all_events', false)
-            ->get()
-            ->map(function (ProjectorStatus $projectorStatus) {
-                return [
-                    $projectorStatus->getProjector()->getName(),
-                    $projectorStatus->last_processed_event_id,
-                    $projectorStatus->stream,
-                    $projectorStatus->updated_at,
-                ];
-            })
-            ->sortBy(function (array $projectorStatusRow) {
-                return $projectorStatusRow[0];
-            })
+        return collect($events)->map(function (array $eventHandlers, string $eventClass) {
+            return [$eventClass, implode(PHP_EOL, collect($eventHandlers)->sort()->toArray())];
+        })
+            ->sort()
+            ->values()
             ->toArray();
-
-        if (count($rows)) {
-            $this->title('Projectors that have not receveived all events yet');
-            $this->table($header, $rows);
-        }
-    }
-
-    protected function list(Collection $projectors): void
-    {
-        $this->title('All projectors');
-
-        $header = ['Name', 'Last processed event id', 'Last event processed at'];
-
-        $rows = $projectors
-            ->map(function (Projector $projector) {
-                return [
-                    $projector->getName(),
-                    $this->getLastProcessedEventId($projector),
-                    optional($this->getLastEventProcessedAt($projector))->format('Y-m-d H:i:s') ?? '/',
-                ];
-            })
-            ->toArray();
-
-        $this->table($header, $rows);
-    }
-
-    public function getLastProcessedEventId(Projector $projector): int
-    {
-        return $this->getProjectorStatusClass()::query()
-                ->where('projector_name', $projector->getName())
-                ->max('last_processed_event_id') ?? 0;
-    }
-
-    public function getLastEventProcessedAt(Projector $projector): ?Carbon
-    {
-        $status = $this->getProjectorStatusClass()::query()
-            ->where('projector_name', $projector->getName())
-            ->orderBy('updated_at', 'desc')
-            ->first();
-
-        return optional($status)->updated_at;
-    }
-
-    protected function title(string $title)
-    {
-        $this->warn('');
-        $this->warn($title);
-        $this->warn(str_repeat('-', strlen($title)));
     }
 }

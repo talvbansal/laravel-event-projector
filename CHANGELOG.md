@@ -2,8 +2,60 @@
 
 All notable changes to `laravel-event-projector` will be documented in this file
 
-# 1.3.1 - 2018-12-06
-- fixed missing `use` statement in `EventHandlerCollection`
+## 2.4.0 - 2019-04-23
+
+- allow to specify the queue that should be used on the event
+
+## 2.3.0 - 2019-04-16
+
+- add `list` command
+
+## 2.2.0 - 2019-04-16
+
+- automatically register event handlers
+
+## 2.1.1 - 2019-04-13
+
+- stubs don't use `handlesEvents` anymore
+
+## 2.1.0 - 2019-04-13
+
+- add autodetection for event handling methods
+
+## 2.0.5 - 2019-04-09
+
+- fix storable event command
+
+## 2.0.4 - 2019-04-09
+
+- fix `make` commands
+
+## 2.0.3 - 2019-04-09
+
+- make service provider final
+
+## 2.0.2 - 2019-04-09
+
+- make service provider non final
+
+## 2.0.1 - 2019-04-09
+
+- fix `HandleStoredEventJob`
+
+## 2.0.0 - 2019-04-08
+
+- added support for aggregates
+- support a new `handleEvent` property for event handlers
+- removed all support for projector statusses
+- the `rebuild` command has been removed. It's been replace by the `--from` flag on event replay
+
+## 1.3.2 - 2018-02-27
+
+- add support for Laravel 5.8
+
+## 1.3.1 - 2018-12-06
+
+- fix missing `use` statement in `EventHandlerCollection`
 
 ## 1.3.0 - 2018-11-19
 
@@ -11,7 +63,7 @@ All notable changes to `laravel-event-projector` will be documented in this file
 
 ## 1.2.0 - 2018-10-30
 
-- added `isProjecting`
+- add `isProjecting`
 
 ## 1.1.2 - 2018-09-27
 

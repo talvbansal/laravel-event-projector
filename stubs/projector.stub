@@ -5,21 +5,11 @@ namespace DummyNamespace;
 use Spatie\EventProjector\Projectors\Projector;
 use Spatie\EventProjector\Projectors\ProjectsEvents;
 
-class DummyClass implements Projector
+final class DummyClass implements Projector
 {
     use ProjectsEvents;
 
-    /*
-     * Here you can specify which event should trigger which method.
-     */
-    protected $handlesEvents = [
-        // EventHappened::class => 'onEventHappened',
-    ];
-
-    /*
     public function onEventHappened(EventHappended $event)
     {
-
     }
-    */
 }

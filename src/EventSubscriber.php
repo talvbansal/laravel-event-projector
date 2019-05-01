@@ -2,27 +2,22 @@
 
 namespace Spatie\EventProjector;
 
-class EventSubscriber
+final class EventSubscriber
 {
-    /** @var \Spatie\EventProjector\Projectionist */
-    protected $projectionist;
+    /** @var string */
+    private $storedEventModel;
 
-    /** @var array */
-    protected $config;
-
-    public function __construct(Projectionist $projectionist, array $config = [])
+    public function __construct(string $storedEventModel)
     {
-        $this->projectionist = $projectionist;
-
-        $this->config = $config;
+        $this->storedEventModel = $storedEventModel;
     }
 
-    public function subscribe($events)
+    public function subscribe($events): void
     {
         $events->listen('*', static::class.'@handle');
     }
 
-    public function handle(string $eventName, $payload)
+    public function handle(string $eventName, $payload): void
     {
         if (! $this->shouldBeStored($eventName)) {
             return;
@@ -31,12 +26,12 @@ class EventSubscriber
         $this->storeEvent($payload[0]);
     }
 
-    public function storeEvent(ShouldBeStored $event)
+    public function storeEvent(ShouldBeStored $event): void
     {
-        $this->projectionist->storeEvent($event);
+        $this->storedEventModel::store($event);
     }
 
-    protected function shouldBeStored($event): bool
+    private function shouldBeStored($event): bool
     {
         if (! class_exists($event)) {
             return false;

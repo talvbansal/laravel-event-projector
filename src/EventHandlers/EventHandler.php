@@ -3,6 +3,7 @@
 namespace Spatie\EventProjector\EventHandlers;
 
 use Exception;
+use Illuminate\Support\Collection;
 use Spatie\EventProjector\Models\StoredEvent;
 
 interface EventHandler
@@ -11,5 +12,7 @@ interface EventHandler
 
     public function handle(StoredEvent $event);
 
-    public function handleException(Exception $exception);
+    public function handleException(Exception $exception): void;
+
+    public function getEventHandlingMethods(): Collection;
 }

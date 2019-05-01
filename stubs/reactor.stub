@@ -5,20 +5,11 @@ namespace DummyNamespace;
 use Spatie\EventProjector\EventHandlers\EventHandler;
 use Spatie\EventProjector\EventHandlers\HandlesEvents;
 
-class DummyClass implements EventHandler
+final class DummyClass implements EventHandler
 {
     use HandlesEvents;
 
-    /*
-     * Here you can specify which event should trigger which method.
-     */
-    protected $handlesEvents = [
-        // EventHappened::class => 'onEventHappened',
-    ];
-
-    /*
     public function onEventHappened(EventHappended $event)
     {
     }
-    */
 }
